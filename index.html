@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f5f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1311" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Money Flow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}input,button,select{-webkit-user-select:auto}</style>
+<title>Money Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-first column, sticky title bar on top, tab bar at the bottom; heroes carry the month's key number */
+:root{
+ --acL:#0f766e;--acD:#2dd4bf;
+ --bg:#f2f5f4;--card:#ffffff;--sunk:#edf1ef;--tx:#14201c;--mu:#5f6d68;--bd:#dde4e1;
+ --pos:#15803d;--neg:#dc2626;--warm:#ea580c;--sav:#0e7490;
+ --ac:var(--acL);--ac-ink:#ffffff;--ac-inv:var(--acD);
+ --sh:0 1px 2px rgba(16,32,28,.05),0 6px 18px rgba(16,32,28,.05);
+ --f-d:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+ --f-b:"Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+:root[data-accent="blue"]{--acL:#2563eb;--acD:#60a5fa}
+:root[data-accent="violet"]{--acL:#7c3aed;--acD:#a78bfa}
+:root[data-accent="orange"]{--acL:#c2410c;--acD:#fb923c}
+:root[data-accent="rose"]{--acL:#be123c;--acD:#fb7185}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0d1311;--card:#161e1b;--sunk:#111916;--tx:#e6eeeb;--mu:#93a39d;--bd:#25302c;
+ --pos:#4ade80;--neg:#f87171;--warm:#fb923c;--sav:#22d3ee;
+ --ac:var(--acD);--ac-ink:#08130f;--ac-inv:var(--acL);--sh:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#0d1311;--card:#161e1b;--sunk:#111916;--tx:#e6eeeb;--mu:#93a39d;--bd:#25302c;
+ --pos:#4ade80;--neg:#f87171;--warm:#fb923c;--sav:#22d3ee;
+ --ac:var(--acD);--ac-ink:#08130f;--ac-inv:var(--acL);--sh:none;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 var(--f-b);padding-bottom:calc(88px + env(safe-area-inset-bottom,0px));-webkit-tap-highlight-color:transparent}
+.w{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:0 16px}
+button{font:inherit}
+svg.i{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;width:20px;height:20px;flex:none}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top .w{display:flex;align-items:flex-end;gap:12px;padding-block:14px 12px}
+.ttl{flex:1;min-width:0}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mu);font-weight:700}
+h1{font:750 28px/1.1 var(--f-d);margin:3px 0 0;letter-spacing:-.015em;text-wrap:balance}
+.ib{width:44px;height:44px;border-radius:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);display:grid;place-items:center;cursor:pointer;flex:none}
+section{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;box-shadow:var(--sh);min-width:0}
+.form,.set{display:flex;flex-direction:column;gap:14px}
+h2{font:700 17px/1.2 var(--f-d);margin:0 0 12px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.form>h2,.set h2{margin:0}
+h2 small{font:600 12px var(--f-b);color:var(--mu)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+label,.lbl{font-size:12px;font-weight:700;color:var(--mu)}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--sunk);color:var(--tx);font:500 16px var(--f-b)}
+textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:96px;resize:vertical}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input:focus{border-color:var(--ac)}
+.amt{position:relative}
+.amt input{font:750 30px var(--f-d);padding:12px 54px 12px 14px;font-variant-numeric:tabular-nums}
+.amt span{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--mu);font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border:0;border-radius:14px;background:var(--ac);color:var(--ac-ink);font-weight:700;cursor:pointer;transition:transform .1s,background .2s;text-align:center}
+.btn:active{transform:scale(.98)}
+.btn.s{background:var(--sunk);color:var(--tx);border:1px solid var(--bd);font-weight:600}
+.btn.d{background:transparent;color:var(--neg);border:1px solid color-mix(in srgb,var(--neg) 45%,transparent)}
+.btn.d.arm{background:var(--neg);color:#fff}
+.w100{width:100%}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* bottom bar */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:7;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav .in{max-width:720px;margin:0 auto;display:flex}
+.nav button{flex:1;min-width:0;border:0;background:none;color:var(--mu);font-size:10.5px;font-weight:700;padding:4px 1px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav .pill{padding:4px 14px;border-radius:99px;display:grid;transition:background .2s}
+.nav svg.i{width:22px;height:22px}
+.nav button.on{color:var(--ac)}
+.nav button.on .pill{background:color-mix(in srgb,var(--ac) 15%,transparent)}
+/* heroes */
+.hero{border-radius:22px;padding:18px;color:#fff}
+.hero.bal{background:var(--ac);color:var(--ac-ink)}
+.hero.in{background:linear-gradient(140deg,#15803d,#0d9488)}
+.hero.ex{background:linear-gradient(140deg,#ea580c,#f97316)}
+.hero.sv{background:linear-gradient(140deg,#0e7490,#0891b2)}
+.tile.row{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.tile.row .r{text-align:right;min-width:0}
+.ib.on{color:var(--ac);border-color:var(--ac)}
+.hero small{font-size:12.5px;font-weight:700;opacity:.88}
+.big{font:800 38px/1.05 var(--f-d);margin:6px 0 12px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.big u{text-decoration:none;font-size:.45em;font-weight:700;opacity:.8;margin-left:6px;letter-spacing:0}
+.chips-h{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,currentColor 17%,transparent);font-size:12px;font-weight:700}
+.trk{height:8px;border-radius:99px;background:color-mix(in srgb,currentColor 22%,transparent);overflow:hidden;margin-top:14px}
+.trk div{height:100%;background:currentColor;border-radius:99px;transition:width .4s}
+/* home tiles */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{text-align:left;border:1px solid var(--bd);background:var(--card);border-radius:20px;padding:14px;cursor:pointer;color:var(--tx);display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh);min-width:0}
+.tile .k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--mu)}
+.tile .k i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center}
+.tile .k svg.i{width:16px;height:16px}
+.tile b{font:750 22px var(--f-d);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats.three{grid-template-columns:repeat(3,1fr)}
+.stat{background:var(--sunk);border-radius:14px;padding:10px 12px;min-width:0}
+.stat span{display:block;font-size:11.5px;color:var(--mu);font-weight:700}
+.stat b{display:block;font:700 15px var(--f-d);margin-top:3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.up{color:var(--neg)}.dn{color:var(--pos)}
+/* categories */
+.crow{display:grid;grid-template-columns:auto 1fr auto 3em;gap:5px 10px;align-items:center;padding:7px 0;font-size:14px}
+.crow>i{width:10px;height:10px;border-radius:50%}
+.crow .cn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .cv{font-weight:700;font-variant-numeric:tabular-nums}
+.crow .cp{color:var(--mu);text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+.crow .bb{grid-column:2/-1;height:5px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.crow .bb div{height:100%;border-radius:99px}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.cat{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;border:1px solid var(--bd);background:var(--sunk);color:var(--tx);font-size:13px;font-weight:600;cursor:pointer}
+.cat.on{background:color-mix(in srgb,var(--cc) 18%,var(--card));border-color:var(--cc);box-shadow:inset 0 0 0 1px var(--cc)}
+.cat.add{border-style:dashed;color:var(--mu);background:transparent}
+.ncw{display:flex;gap:8px;margin-top:10px}
+.ncw input{flex:1;min-width:0}
+/* transactions */
+.dh{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:16px 0 4px;font-variant-numeric:tabular-nums}
+.dh:first-child{padding-top:0}
+.tx{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.tx:last-child{border-bottom:0}
+.tx .ic{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-size:19px;background:color-mix(in srgb,var(--cc) 17%,transparent);flex:none}
+.tx .tt{flex:1;min-width:0}
+.tx .tt b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx .tt span{font-size:12px;color:var(--mu);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx .am{font:700 15px var(--f-d);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tx .am.p{color:var(--pos)}
+.x{width:34px;height:34px;border-radius:10px;border:0;background:transparent;color:var(--mu);cursor:pointer;display:grid;place-items:center;flex:none}
+.x:hover{background:var(--sunk);color:var(--neg)}
+.x svg.i{width:16px;height:16px}
+/* controls */
+.ms{display:flex;align-items:center;gap:8px}
+.ms input{flex:1;text-align:center;font-weight:700;min-width:0;background:var(--card)}
+.ms button{flex:none;width:46px;height:46px;border-radius:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;display:grid;place-items:center}
+.seg{display:flex;background:var(--sunk);border:1px solid var(--bd);border-radius:13px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--mu);padding:9px 6px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--bd);background:var(--sunk);color:var(--tx);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chips button.off{opacity:.45}
+.chips i{display:inline-block;width:9px;height:9px;border-radius:50%}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw button{width:36px;height:36px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--bd);cursor:pointer}
+.sw button.on{box-shadow:0 0 0 2px var(--tx)}
+.sr{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap}
+.sr>div:first-child{min-width:0;flex:1 1 170px}
+.sr b{display:block;font-weight:700}
+.sr>div:first-child span{font-size:12.5px;color:var(--mu)}
+.sr .seg,.sr select{flex:1 1 230px;width:auto}
+.pv{display:flex;flex-direction:column;font-size:14px}
+.pv div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--bd);font-variant-numeric:tabular-nums}
+.pv div.t{font-weight:700;border-bottom-style:solid}
+.pv .neg{color:var(--neg)}.pv .pos{color:var(--pos)}
+.n{font-size:12.5px;color:var(--mu);line-height:1.5;margin:0}
+.emp{text-align:center;color:var(--mu);padding:22px 8px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.emp .badge{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 14%,transparent);color:var(--ac)}
+.emp .badge svg.i{width:28px;height:28px}
+details>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";color:var(--mu);font-weight:700}
+details[open]>summary::after{content:"−"}
+#ch svg text{font-family:var(--f-b)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translate(-50%,14px);opacity:0;pointer-events:none;background:var(--tx);color:var(--bg);padding:11px 12px 11px 16px;border-radius:14px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:14px;z-index:9;transition:opacity .2s,transform .2s;width:max-content;max-width:calc(100% - 32px);box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{border:0;background:none;color:var(--ac-inv);font-weight:800;cursor:pointer;padding:4px 6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:380px){.big{font-size:32px}.nav button{font-size:9.5px}.nav .pill{padding:4px 10px}}
+</style>
+
+</head>
+<body>
+<header class="top"><div class="w">
+ <div class="ttl"><div class="eyebrow" id="eyb">Money Flow</div><h1 id="pgt">Rezumat</h1></div>
+ <button class="ib" id="setb" data-go="s" aria-label="Setări"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+ <button class="ib" id="thb" aria-label="Schimbă tema"></button>
+</div></header>
+
+<div class="w">
+
+<section id="v"><div id="vbody" style="display:flex;flex-direction:column;gap:12px"></div></section>
+
+<section id="i" hidden>
+ <div class="ms"><button data-ms="im" data-k="-1" aria-label="Luna anterioară"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><input type="month" id="im" aria-label="Luna afișată"><button data-ms="im" data-k="1" aria-label="Luna următoare"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+ <div id="ihero"></div>
+ <div class="card form"><h2>Adaugă venit</h2>
+  <div class="fld"><label for="ia">Sumă</label><div class="amt"><input type="number" id="ia" inputmode="decimal" step="0.01" placeholder="0"><span>lei</span></div></div>
+  <div class="fld"><span class="lbl">Categorie</span><div class="cats" id="ic"></div>
+   <div class="ncw" id="incw" hidden><input type="text" id="incn" maxlength="24" placeholder="Numele categoriei noi"><button class="btn" type="button" id="incok">Adaugă</button><button class="btn s" type="button" id="incx" aria-label="Renunță">✕</button></div></div>
+  <div class="grid"><div class="fld"><label for="idt">Data</label><input type="date" id="idt"></div><div class="fld"><label for="inn">Notă (opțional)</label><input type="text" id="inn" maxlength="60" placeholder="ex. salariu octombrie"></div></div>
+  <div class="qa"><button class="btn s" id="icalc">Sumă din calculator</button><button class="btn" id="iadd">Adaugă venitul</button></div>
+ </div>
+ <div class="card"><h2>Pe categorii</h2><div id="ibar"></div></div>
+ <div class="card"><h2>Venituri în lună</h2><div id="ilist"></div></div>
+</section>
+
+<section id="c" hidden>
+ <div class="ms"><button data-ms="em" data-k="-1" aria-label="Luna anterioară"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><input type="month" id="em" aria-label="Luna afișată"><button data-ms="em" data-k="1" aria-label="Luna următoare"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+ <div id="ehero"></div>
+ <div class="card form"><h2>Adaugă cheltuială</h2>
+  <div class="fld"><label for="ea">Sumă</label><div class="amt"><input type="number" id="ea" inputmode="decimal" step="0.01" placeholder="0"><span>lei</span></div></div>
+  <div class="fld"><span class="lbl">Categorie</span><div class="cats" id="ec"></div>
+   <div class="ncw" id="ncw" hidden><input type="text" id="ncn" maxlength="24" placeholder="Numele categoriei noi"><button class="btn" type="button" id="ncok">Adaugă</button><button class="btn s" type="button" id="ncx" aria-label="Renunță">✕</button></div></div>
+  <div class="grid"><div class="fld"><label for="ed">Data</label><input type="date" id="ed"></div><div class="fld"><label for="en">Notă (opțional)</label><input type="text" id="en" maxlength="60" placeholder="ex. Kaufland"></div></div>
+  <button class="btn w100" id="eadd">Adaugă cheltuiala</button>
+ </div>
+ <div class="card"><h2>Pe categorii</h2><div id="ebar"></div></div>
+ <div class="card"><h2>Cheltuieli în lună</h2><div id="elist"></div></div>
+</section>
+
+<section id="e" hidden>
+ <div class="ms"><button data-ms="vm" data-k="-1" aria-label="Luna anterioară"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><input type="month" id="vm" aria-label="Luna afișată"><button data-ms="vm" data-k="1" aria-label="Luna următoare"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+ <div id="vhero"></div>
+ <div class="card form"><h2>Mișcare în economii</h2>
+  <div class="seg" id="vtype"><button data-vt="in" class="on">Pun deoparte</button><button data-vt="out">Retrag</button></div>
+  <div class="fld"><label for="va">Sumă</label><div class="amt"><input type="number" id="va" inputmode="decimal" step="0.01" placeholder="0"><span>lei</span></div><p class="n" id="vavail"></p></div>
+  <div class="grid"><div class="fld"><label for="vd">Data</label><input type="date" id="vd"></div><div class="fld"><label for="vn">Notă (opțional)</label><input type="text" id="vn" maxlength="60" placeholder="ex. fond de urgență"></div></div>
+  <button class="btn w100" id="vadd">Pune deoparte</button>
+ </div>
+ <div class="card"><h2>Mișcări în lună</h2><div id="vlist"></div></div>
+ <p class="n" style="text-align:center">Banii puși deoparte se scad din soldul lunii. Retragerile îi adaugă înapoi.</p>
+</section>
+
+<section id="g" hidden>
+ <div class="stats" id="st"></div>
+ <div class="card set">
+  <div class="seg" id="rg"><button data-r="6">6 luni</button><button data-r="12">12 luni</button><button data-r="0" class="on">Tot</button></div>
+  <div class="chips" id="sr"></div>
+  <div id="ch"></div>
+  <p class="n">Atinge sau trage pe grafic ca să alegi luna.</p>
+ </div>
+ <div class="card" id="det"></div>
+</section>
+
+<section id="a" hidden>
+ <div class="hero bal"><small>Salariu net + tichete</small><div class="big" id="pt"></div><div class="chips-h"><span class="chip" id="prate"></span></div></div>
+ <div class="card form"><h2>Luna și salariul</h2>
+  <div class="fld"><span class="lbl">Luna</span><div class="ms"><button data-ms="m" data-k="-1" aria-label="Luna anterioară"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><input type="month" id="m" aria-label="Luna"><button data-ms="m" data-k="1" aria-label="Luna următoare"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
+  <div class="grid"><div class="fld"><label for="b">Salariu brut de bază (lei)</label><input type="number" id="b" inputmode="decimal"></div><div class="fld"><label for="h">Ore lucrătoare în lună</label><input type="number" id="h" value="176" inputmode="decimal"></div></div>
+ </div>
+ <div class="card form"><h2>Sporuri și bonus</h2><div class="grid">
+  <div class="fld"><label for="nh">Ore de noapte</label><input type="number" id="nh" value="0" inputmode="decimal"></div>
+  <div class="fld"><label for="os">Ore suplimentare</label><input type="number" id="os" value="0" inputmode="decimal"></div>
+  <div class="fld"><label for="bp">Bonus (% din bază)</label><input type="number" id="bp" value="0" inputmode="decimal"></div></div>
+ </div>
+ <div class="card form"><h2>Tichete de masă</h2><div class="fld"><label for="t">Valoare totală în lună (lei)</label><input type="number" id="t" value="0" inputmode="decimal"></div></div>
+ <div class="card"><h2>Detaliere</h2><div class="pv" id="pv"></div>
+  <div class="qa" style="margin-top:14px"><button class="btn s" id="cl">Resetează</button><button class="btn" id="tosend">Adaugă la venit</button></div>
+  <p class="n" style="margin-top:10px">Procentele de taxe, sporuri și orele lucrătoare se schimbă din Setări.</p></div>
+</section>
+
+<section id="s" hidden>
+ <div class="card"><h2>Aspect</h2><div class="set">
+  <div class="sr"><div><b>Temă</b><span>Automat urmează setarea telefonului.</span></div><div class="seg"><button data-th="auto">Automat</button><button data-th="light">Luminos</button><button data-th="dark">Întunecat</button></div></div>
+  <div class="sr"><div><b>Culoare principală</b><span>Butoane, sold și grafic.</span></div><div class="sw">
+   <button data-acc="teal" style="background:#0f766e" aria-label="Verde-albastru"></button><button data-acc="blue" style="background:#2563eb" aria-label="Albastru"></button><button data-acc="violet" style="background:#7c3aed" aria-label="Violet"></button><button data-acc="orange" style="background:#c2410c" aria-label="Portocaliu"></button><button data-acc="rose" style="background:#be123c" aria-label="Roșu"></button></div></div>
+  <div class="sr"><div><b>Afișare sume</b><span>Cu sau fără bani.</span></div><div class="seg"><button data-dec="2">1.234,50</button><button data-dec="0">1.235</button></div></div>
+  <div class="sr"><div><b>Pagina de start</b><span>Se deschide când intri în aplicație.</span></div><select id="startsel"><option value="v">Acasă</option><option value="c">Cheltuieli</option><option value="i">Venit</option><option value="e">Economii</option><option value="g">Grafic</option><option value="a">Calculator salariu</option></select></div>
+ </div></div>
+ <div class="card form"><h2>Buget și obiective</h2>
+  <div class="fld"><label for="budget">Limită de cheltuieli pe lună</label><div class="amt"><input type="number" id="budget" inputmode="decimal" placeholder="0"><span>lei</span></div></div>
+  <p class="n">Lasă 0 dacă nu vrei buget. Îl vezi pe Acasă și la Cheltuieli, cu cât îți rămâne pe zi.</p>
+  <div class="fld"><label for="goal">Obiectiv de economii (total)</label><div class="amt"><input type="number" id="goal" inputmode="decimal" placeholder="0"><span>lei</span></div></div>
+  <p class="n">Apare ca bară de progres în tab-ul Economii.</p>
+ </div>
+ <div class="card set"><h2>Salariu și taxe</h2>
+  <div class="fld"><label for="base">Salariu brut de bază (lei)</label><input type="number" id="base" inputmode="decimal"><p class="n">Se completează automat în calculator.</p></div>
+  <div class="grid"><div class="fld"><label for="cas">CAS (pensie) %</label><input type="number" id="cas" step="0.1"></div><div class="fld"><label for="cass">CASS (sănătate) %</label><input type="number" id="cass" step="0.1"></div><div class="fld"><label for="imp">Impozit pe venit %</label><input type="number" id="imp" step="0.1"></div></div>
+  <div class="grid"><div class="fld"><label for="np">Oră de noapte %</label><input type="number" id="np" step="1"></div><div class="fld"><label for="op">Oră suplimentară %</label><input type="number" id="op" step="1"></div></div>
+  <details><summary>Cum se calculează</summary><p class="n" style="margin-top:8px">Tarif orar = bază ÷ ore lucrătoare. CAS = brut × CAS. CASS = (brut + tichete) × CASS. Impozit = (brut + tichete − CAS − CASS) × impozit. Fiecare contribuție se rotunjește la leu, ca în statul de plată. Net = brut − CAS − CASS − impozit; tichetele se adaugă la final.</p></details>
+  <details><summary>Ore lucrătoare pe lună (2026–2027)</summary><p class="n" style="margin:8px 0 10px">Zile lucrătoare × 8 ore, fără sărbătorile legale. Poți modifica orice lună.</p><div id="whg"></div><button class="btn s" id="whr" style="margin-top:12px">Revino la valorile automate</button></details>
+ </div>
+ <div class="card"><h2>Categorii proprii</h2><div id="custcats"></div></div>
+ <div class="card set"><h2>Datele tale</h2>
+  <p class="n">Datele stau doar în acest browser, pe acest dispozitiv. Fă o copie de siguranță din când în când.</p>
+  <div class="qa"><button class="btn s" id="expbtn">Copiază backup</button><button class="btn s" id="impbtn">Restaurează</button></div>
+  <textarea id="expta" readonly hidden aria-label="Backup"></textarea>
+  <div id="impw" class="set" hidden><textarea id="impta" placeholder="Lipește aici textul copiat la backup"></textarea><button class="btn" id="impgo">Restaurează datele</button></div>
+  <button class="btn d w100" id="wipe">Șterge toate datele</button>
+ </div>
+ <p class="n" style="text-align:center">Money Flow · calcul salarial pentru România</p>
+</section>
+
+</div>
+
+<nav class="nav"><div class="in">
+ <button data-t="v"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></span>Acasă</button>
+ <button data-t="i"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 19.5h16"/></svg></span>Venit</button>
+ <button data-t="c"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M12 19.5V8.5"/><path d="M7.5 13L12 8.5l4.5 4.5"/><path d="M4 4.5h16"/></svg></span>Cheltuieli</button>
+ <button data-t="e"><span class="pill"><svg class="i" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg></span>Economii</button>
+ <button data-t="g"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M4 19.5h16"/><path d="M5 15l4.5-5 3.5 3 6-7"/></svg></span>Grafic</button>
+ <button data-t="a"><span class="pill"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M8.5 12h1M14.5 12h1M8.5 16h1M14.5 16h1"/></svg></span>Salariu</button>
+</div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const arr=v=>Array.isArray(v)?v:[];
+const DEF={cas:25,cass:10,imp:10,np:125,op:175,base:0};
+let S={...DEF,...(LS.get('sal_s')||{})};if(S.np==225)S.np=125;
+let D=arr(LS.get('sal_d'));
+const UDEF={theme:'auto',accent:'teal',dec:2,start:'v',budget:0,goal:0};
+let U={...UDEF,...(LS.get('sal_ui')||{})};
+const save=()=>{LS.set('sal_s',S);LS.set('sal_d',D)},saveU=()=>LS.set('sal_ui',U);
+const BASE=[['Mâncare','🛒','#16a34a'],['Locuință','🏠','#2563eb'],['Transport','🚗','#0ea5e9'],['Facturi','💡','#f59e0b'],['Sănătate','💊','#e11d48'],['Distracție','🎉','#a855f7'],['Altele','📦','#64748b']];
+const IBASE=[['Salariu','💼','#16a34a'],['Bonus','🎁','#f59e0b'],['Tichete de masă','🎫','#0ea5e9'],['Freelance','💻','#8b5cf6'],['Alte venituri','📦','#64748b']];
+const PAL=['#14b8a6','#f97316','#ec4899','#84cc16','#8b5cf6','#eab308','#06b6d4','#ef4444'];
+let CU=arr(LS.get('sal_c')).filter(x=>Array.isArray(x)&&x[0]),IU=arr(LS.get('sal_ic')).filter(x=>Array.isArray(x)&&x[0]);
+let E=arr(LS.get('sal_e')),I=arr(LS.get('sal_i')),V=arr(LS.get('sal_v'));
+const saveV=()=>LS.set('sal_v',V),sg=x=>x.t=='out'?-x.a:x.a;let vt='in';
+const saveC=()=>LS.set('sal_c',CU),saveIC=()=>LS.set('sal_ic',IU),saveE=()=>LS.set('sal_e',E),saveI=()=>LS.set('sal_i',I);
+let CATS,ICATS;const recats=()=>{CATS=[...BASE,...CU];ICATS=[...IBASE,...IU]};recats();
+let ecv=BASE[0][0],icv=IBASE[0][0],cur='v';
+
+const f=x=>(x||0).toLocaleString('ro-RO',{minimumFractionDigits:U.dec,maximumFractionDigits:U.dec});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MN=['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
+const MNL=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
+const DNL=['duminică','luni','marți','miercuri','joi','vineri','sâmbătă'];
+const p2=x=>String(x).padStart(2,'0');
+const ym=d=>d.getFullYear()+'-'+p2(d.getMonth()+1),iso=d=>ym(d)+'-'+p2(d.getDate()),today=()=>iso(new Date());
+const shiftM=(m,k)=>ym(new Date(+m.slice(0,4),+m.slice(5)-1+k,1));
+const lab=m=>MN[+m.slice(5)-1]+' '+m.slice(2,4),labL=m=>MNL[+m.slice(5)-1]+' '+m.slice(0,4);
+const mo=x=>x.d.slice(0,7);
+const dayLab=d=>{if(d==today())return'Azi';const y=new Date();y.setDate(y.getDate()-1);if(d==iso(y))return'Ieri';const t=new Date(d+'T12:00');return DNL[t.getDay()]+', '+(+d.slice(8))+' '+MN[+d.slice(5,7)-1]};
+const SV=p=>`<svg class="i" viewBox="0 0 24 24">${p}</svg>`;
+const IC={x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',plus:'<path d="M12 5v14M5 12h14"/>',in:'<path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 19.5h16"/>',ex:'<path d="M12 19.5V8.5"/><path d="M7.5 13L12 8.5l4.5 4.5"/><path d="M4 4.5h16"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',sv:'<ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/>',wallet:'<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v4"/><rect x="4" y="7.5" width="16" height="12" rx="2.5"/><path d="M16 13.5h1"/>'};
+
+/* ---------- theme ---------- */
+const HOST_TH=document.documentElement.getAttribute('data-theme');
+const mq=matchMedia('(prefers-color-scheme: dark)');
+const isDark=()=>U.theme=='dark'||(U.theme=='auto'&&(HOST_TH?HOST_TH=='dark':mq.matches));
+function applyUI(){const r=document.documentElement;
+ if(U.theme=='auto'){HOST_TH?r.setAttribute('data-theme',HOST_TH):r.removeAttribute('data-theme')}else r.setAttribute('data-theme',U.theme);
+ r.setAttribute('data-accent',U.accent);
+ $('thb').innerHTML=SV(isDark()?IC.sun:IC.moon);$('thb').setAttribute('aria-label',isDark()?'Treci la tema luminoasă':'Treci la tema întunecată');
+ document.querySelectorAll('[data-th]').forEach(b=>b.classList.toggle('on',b.dataset.th==U.theme));
+ document.querySelectorAll('[data-acc]').forEach(b=>b.classList.toggle('on',b.dataset.acc==U.accent));
+ document.querySelectorAll('[data-dec]').forEach(b=>b.classList.toggle('on',+b.dataset.dec==U.dec))}
+mq.addEventListener&&mq.addEventListener('change',applyUI);
+
+/* ---------- toast ---------- */
+function toast(msg,undo){const t=$('toast');t.innerHTML=`<span>${msg}</span>`+(undo?'<button type="button">Anulează</button>':'');t.classList.add('show');clearTimeout(toast.h);
+ toast.h=setTimeout(()=>t.classList.remove('show'),undo?5500:2400);if(undo)t.querySelector('button').onclick=()=>{undo();t.classList.remove('show')}}
+
+/* ---------- salary calc ---------- */
+const HOL=[[1,1],[1,2],[1,6],[1,7],[1,24],[5,1],[6,1],[8,15],[11,30],[12,1],[12,25],[12,26]];
+function easter(y){const a=y%4,b=y%7,c=y%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),day=(d+e+114)%31+1;return new Date(Date.UTC(y,m-1,day+13))}
+function wdef(y,m){const e=easter(y),hs=new Set(HOL.map(([a,b])=>a+'-'+b));[-2,0,1,49,50].forEach(k=>{const t=new Date(e.getTime()+k*864e5);hs.add((t.getUTCMonth()+1)+'-'+t.getUTCDate())});let n=0;const dim=new Date(Date.UTC(y,m,0)).getUTCDate();for(let d=1;d<=dim;d++){const w=new Date(Date.UTC(y,m-1,d)).getUTCDay();if(w&&w<6&&!hs.has(m+'-'+d))n++}return n*8}
+const wh=m=>{S.wh=S.wh||{};return S.wh[m]!=null?S.wh[m]:wdef(+m.slice(0,4),+m.slice(5))};
+const setH=()=>{const m=$('m').value;if(m)$('h').value=wh(m)};
+function whGrid(){let s='';[2026,2027].forEach(y=>{s+=`<p class="n" style="margin:10px 0 6px"><b>${y}</b></p><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px">`;for(let i=1;i<=12;i++){const m=y+'-'+p2(i);s+=`<div class="fld"><label for="wh${m}">${MN[i-1]}</label><input type="number" id="wh${m}" data-wh="${m}" value="${wh(m)}" inputmode="decimal"></div>`}s+='</div>'});$('whg').innerHTML=s;
+ $('whg').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{const m=inp.dataset.wh;S.wh=S.wh||{};if(inp.value==='')delete S.wh[m];else S.wh[m]=+inp.value;save();if($('m').value==m){setH();prev()}})}
+function calc(r){const rate=r.h>0?r.b/r.h:0,spor=r.nh*rate*S.np/100,sup=(r.os||0)*rate*S.op/100,bonus=r.b*r.bp/100,brut=r.b+spor+sup+bonus;
+ const cas=Math.round(brut*S.cas/100),cass=Math.round((brut+r.t)*S.cass/100),imp=Math.max(0,Math.round((brut+r.t-cas-cass)*S.imp/100)),net=brut-cas-cass-imp;
+ return{rate,spor,sup,bonus,brut,cas,cass,imp,net,tot:net+r.t}}
+const read=()=>({m:$('m').value,b:+$('b').value||0,h:+$('h').value||0,nh:+$('nh').value||0,os:+$('os').value||0,t:+$('t').value||0,bp:+$('bp').value||0});
+function prev(){const r=read(),c=calc(r);
+ $('pt').innerHTML=f(c.tot)+'<u>lei</u>';$('prate').textContent='Tarif orar '+f(c.rate)+' lei · '+(r.m?labL(r.m):'');
+ const L=(a,v,k,show=true)=>show?`<div class="${k=='t'?'t':''}"><span>${a}</span><span class="${k||''}">${k=='neg'?'− ':k=='pos'?'+ ':''}${f(v)}</span></div>`:'';
+ $('pv').innerHTML=L('Salariu de bază',r.b)+L('Spor de noapte',c.spor,'pos',c.spor>0)+L('Ore suplimentare',c.sup,'pos',c.sup>0)+L('Bonus',c.bonus,'pos',c.bonus>0)+L('Brut total',c.brut,'t')+L('CAS '+S.cas+'%',c.cas,'neg')+L('CASS '+S.cass+'% (brut + tichete)',c.cass,'neg')+L('Impozit '+S.imp+'%',c.imp,'neg')+L('Net',c.net,'t')+L('Tichete de masă',r.t,'pos',r.t>0)}
+
+/* ---------- shared helpers ---------- */
+const spOf=m=>E.filter(x=>mo(x)==m).reduce((a,x)=>a+x.a,0);
+const svOf=m=>V.filter(x=>mo(x)==m).reduce((a,x)=>a+sg(x),0),svTot=()=>V.reduce((a,x)=>a+sg(x),0);
+function svRow(x,del){const o=x.t=='out';return`<div class="tx"><div class="ic" style="--cc:var(--sav)">${o?'💸':'🐷'}</div><div class="tt"><b>${esc(x.n||(o?'Retragere':'Pus deoparte'))}</b><span>${o?'Retras din economii':'Economii'}${del?'':' · '+dayLab(x.d)}</span></div><div class="am" style="color:${o?'var(--neg)':'var(--sav)'}">${o?'−':'+'}${f(x.a)}</div>${del?`<button class="x" data-del="v" data-id="${x.id}" aria-label="Șterge">${SV(IC.x)}</button>`:''}</div>`}
+const incOf=m=>{const l=I.filter(x=>mo(x)==m);if(l.length)return l.reduce((a,x)=>a+x.a,0);const r=D.find(x=>x.m==m);return r?calc(r).tot:null};
+const byCat=(Ls,cats)=>{const mp={};Ls.forEach(x=>mp[x.c]=(mp[x.c]||0)+x.a);return Object.entries(mp).map(([k,v])=>[cats.find(c=>c[0]==k)||[k,'🏷️','#94a3b8'],v]).sort((a,b)=>b[1]-a[1])};
+const catBlock=(by,tot)=>by.map(([c,v])=>{const p=tot?v/tot*100:0;return`<div class="crow"><i style="background:${c[2]}"></i><span class="cn">${c[1]} ${esc(c[0])}</span><span class="cv">${f(v)}</span><span class="cp">${p.toFixed(0)}%</span><div class="bb"><div style="width:${p}%;background:${c[2]}"></div></div></div>`}).join('');
+function txRow(x,cats,k,del){const c=cats.find(q=>q[0]==x.c)||[x.c,'🏷️','#94a3b8'];const sub=del?(x.n?esc(x.c):''):(x.n?esc(x.c)+' · ':'')+dayLab(x.d);
+ return`<div class="tx"><div class="ic" style="--cc:${c[2]}">${c[1]}</div><div class="tt"><b>${esc(x.n||x.c)}</b>${sub?`<span>${sub}</span>`:''}</div><div class="am${k=='i'?' p':''}">${k=='i'?'+':'−'}${f(x.a)}</div>${del?`<button class="x" data-del="${k}" data-id="${x.id}" aria-label="Șterge">${SV(IC.x)}</button>`:''}</div>`}
+function txList(Ls,cats,k){const g={};Ls.forEach(x=>(g[x.d]=g[x.d]||[]).push(x));return Object.keys(g).sort().reverse().map(d=>{const l=g[d],s=l.reduce((a,x)=>a+(k=='v'?sg(x):x.a),0);const sign=k=='i'?'+':k=='c'?'−':(s>=0?'+':'−');return`<div class="dh"><span>${dayLab(d)}</span><span>${sign}${f(Math.abs(s))} lei</span></div>`+l.map(x=>k=='v'?svRow(x,true):txRow(x,cats,k,true)).join('')}).join('')}
+const empty=(icon,txt)=>`<div class="emp"><div class="badge">${SV(icon)}</div><p class="n">${txt}</p></div>`;
+const nid=()=>Date.now()+''+Math.random().toString(36).slice(2,6);
+
+/* ---------- home ---------- */
+function summary(){const m=$('sm')?$('sm').value:SM;SM=m;const vb=$('vbody');
+ const stepper=`<div class="ms"><button data-ms="sm" data-k="-1" aria-label="Luna anterioară">${SV('<path d="M15 6l-6 6 6 6"/>')}</button><input type="month" id="sm" value="${m}" aria-label="Luna afișată"><button data-ms="sm" data-k="1" aria-label="Luna următoare">${SV('<path d="M9 6l6 6-6 6"/>')}</button></div>`;
+ if(!E.length&&!I.length&&!D.length&&!V.length){vb.innerHTML=`<div class="card emp" style="padding:30px 18px"><div class="badge">${SV(IC.wallet)}</div><h2 style="margin:4px 0 0">Bun venit în Money Flow</h2><p class="n" style="max-width:34ch">Notează venitul și cheltuielile lunii. Soldul, categoriile și graficul se calculează singure.</p><div class="qa" style="width:100%;margin-top:6px"><button class="btn" data-add="i">${SV(IC.plus)}Adaugă venit</button><button class="btn s" data-go="a">Calculează salariul</button></div></div>`;return}
+ const inc=incOf(m),Ls=E.filter(x=>mo(x)==m),IL=I.filter(x=>mo(x)==m),st=Ls.reduce((a,x)=>a+x.a,0),n=Ls.length,sv=svOf(m),VL=V.filter(x=>mo(x)==m),bal=inc!=null?inc-st-sv:null;
+ const y=+m.slice(0,4),mm=+m.slice(5),dim=new Date(y,mm,0).getDate(),now=new Date(),isCur=ym(now)==m,isFut=m>ym(now),days=isCur?now.getDate():dim;
+ const pm=shiftM(m,-1),psp=spOf(pm),by=byCat(Ls,CATS),big=n?Ls.reduce((a,x)=>x.a>a.a?x:a):null;
+ let h=stepper+`<div class="hero bal"><small>Sold · ${labL(m)}</small><div class="big">${bal==null?'—':(bal<0?'−':'')+f(Math.abs(bal))}<u>lei</u></div>`+
+  (bal==null?`<div class="chips-h"><span class="chip">Adaugă venitul lunii ca să vezi soldul</span></div>`:`<div class="chips-h"><span class="chip">${inc>0?Math.round(st/inc*100):0}% din venit cheltuit</span>${isCur&&bal>0?`<span class="chip">≈ ${f(bal/(dim-days+1))} lei/zi până la final</span>`:''}</div><div class="trk"><div style="width:${inc>0?Math.min(100,st/inc*100):0}%"></div></div>`)+`</div>`;
+ h+=`<div class="duo"><button class="tile" data-go="i"><span class="k"><i style="background:color-mix(in srgb,var(--pos) 15%,transparent);color:var(--pos)">${SV(IC.in)}</i>Venit</span><b>${inc!=null?f(inc):'—'}</b><span class="n">${IL.length} ${IL.length==1?'intrare':'intrări'}</span></button>
+  <button class="tile" data-go="c"><span class="k"><i style="background:color-mix(in srgb,var(--warm) 15%,transparent);color:var(--warm)">${SV(IC.ex)}</i>Cheltuieli</span><b>${f(st)}</b><span class="n">${n} ${n==1?'cheltuială':'cheltuieli'}</span></button></div>`;
+ h+=`<button class="tile row" data-go="e"><span class="k"><i style="background:color-mix(in srgb,var(--sav) 15%,transparent);color:var(--sav)">${SV(IC.sv)}</i>Economii luna asta</span><span class="r"><b>${sv<0?'−':sv>0?'+':''}${f(Math.abs(sv))}</b><span class="n" style="display:block">Total ${f(svTot())} lei</span></span></button>`;
+ h+=`<div class="qa"><button class="btn" data-add="c">${SV(IC.plus)}Cheltuială</button><button class="btn s" data-add="i">${SV(IC.plus)}Venit</button></div>`;
+ if(U.budget>0){const B=U.budget,r=B-st,col=st>B?'var(--neg)':st>B*.8?'var(--warm)':'var(--pos)';
+  h+=`<div class="card"><h2>Buget lunar <small>${f(B)} lei</small></h2><div style="display:flex;justify-content:space-between;gap:10px;font-weight:700"><span style="color:${col}">${r>=0?'Rămas '+f(r)+' lei':'Depășit cu '+f(-r)+' lei'}</span><span class="n">${Math.round(st/B*100)}%</span></div><div class="trk" style="color:${col};margin-top:10px"><div style="width:${Math.min(100,st/B*100)}%"></div></div>${isCur&&r>0?`<p class="n" style="margin-top:10px">Poți cheltui ≈ ${f(r/(dim-days+1))} lei pe zi până la sfârșitul lunii.</p>`:''}</div>`}
+ const d=st-psp,cell=(a,b)=>`<div class="stat"><span>${a}</span><b>${b}</b></div>`;
+ h+=`<div class="card"><h2>Statistici</h2><div class="stats">`+cell('Medie pe zi',isFut?'—':f(st/days)+' lei')+cell('Cea mai mare',big?f(big.a)+' lei':'—')+cell('Categoria principală',by.length?esc(by[0][0][0]):'—')+cell('Față de '+lab(pm),psp||st?`<span class="${d>0?'up':'dn'}">${d>0?'▲ +':'▼ −'}${f(Math.abs(d))}</span>`:'—')+`</div></div>`;
+ if(by.length)h+=`<div class="card"><h2>Unde s-au dus banii</h2>${catBlock(by,st)}</div>`;
+ const rec=[...Ls.map(x=>({...x,k:'c'})),...IL.map(x=>({...x,k:'i'})),...VL.map(x=>({...x,k:'v'}))].sort((a,b)=>a.d==b.d?(a.id<b.id?1:-1):(a.d<b.d?1:-1)).slice(0,5);
+ h+=`<div class="card"><h2>Ultimele tranzacții</h2>${rec.length?rec.map(x=>x.k=='v'?svRow(x,false):txRow(x,x.k=='i'?ICATS:CATS,x.k,false)).join(''):empty(IC.ex,'Nimic înregistrat în '+labL(m)+'.')}</div>`;
+ vb.innerHTML=h}
+let SM=ym(new Date());
+document.addEventListener('input',e=>{if(e.target.id=='sm'&&e.target.value){SM=e.target.value;summary()}});
+
+/* ---------- category pickers ---------- */
+function pickR(box,cats,val){$(box).innerHTML=cats.map(c=>`<button type="button" class="cat${c[0]==val?' on':''}" data-c="${esc(c[0])}" style="--cc:${c[2]}" aria-pressed="${c[0]==val}">${c[1]} ${esc(c[0])}</button>`).join('')+'<button type="button" class="cat add" data-c="__new">+ Categorie nouă</button>'}
+function picker(k){const box=k=='c'?'ec':'ic',w=k=='c'?'ncw':'incw',inp=k=='c'?'ncn':'incn',ok=k=='c'?'ncok':'incok',xx=k=='c'?'ncx':'incx';
+ $(box).onclick=e=>{const b=e.target.closest('.cat');if(!b)return;if(b.dataset.c=='__new'){$(w).hidden=false;$(inp).value='';$(inp).focus();return}
+  if(k=='c'){ecv=b.dataset.c;pickR(box,CATS,ecv)}else{icv=b.dataset.c;pickR(box,ICATS,icv)}};
+ const add=()=>{const n=$(inp).value.trim().slice(0,24);if(!n)return;$(w).hidden=true;const L=k=='c'?CATS:ICATS,ex=L.find(c=>c[0].toLowerCase()==n.toLowerCase());
+  if(!ex){const U2=k=='c'?CU:IU;U2.push([n,'🏷️',PAL[U2.length%PAL.length]]);k=='c'?saveC():saveIC();recats();custR()}
+  if(k=='c'){ecv=ex?ex[0]:n;pickR(box,CATS,ecv)}else{icv=ex?ex[0]:n;pickR(box,ICATS,icv)}};
+ $(ok).onclick=add;$(xx).onclick=()=>$(w).hidden=true;$(inp).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();add()}}}
+
+/* ---------- expenses ---------- */
+function exp(){const m=$('em').value,Ls=E.filter(x=>mo(x)==m),tot=Ls.reduce((a,x)=>a+x.a,0),inc=incOf(m),B=U.budget,ref=B||inc;
+ $('ehero').innerHTML=`<div class="hero ex"><small>Cheltuit · ${labL(m)}</small><div class="big">${f(tot)}<u>lei</u></div><div class="chips-h">`+
+  (inc!=null?(r=>`<span class="chip">${r>=0?'Rămas '+f(r)+' lei din venit':'Depășit venitul cu '+f(-r)+' lei'}</span>`)(inc-svOf(m)-tot):'<span class="chip">Fără venit în luna asta</span>')+
+  (B?`<span class="chip">${tot<=B?'Buget: rămas '+f(B-tot):'Buget depășit cu '+f(tot-B)}</span>`:'')+`</div>`+(ref?`<div class="trk"><div style="width:${Math.min(100,tot/ref*100)}%"></div></div>`:'')+`</div>`;
+ const by=byCat(Ls,CATS);$('ebar').innerHTML=by.length?catBlock(by,tot):'<p class="n">Apar după prima cheltuială din lună.</p>';
+ $('elist').innerHTML=Ls.length?txList(Ls,CATS,'c'):empty(IC.ex,'Nicio cheltuială în '+labL(m)+'.')}
+$('em').oninput=()=>{if($('em').value)exp()};
+$('eadd').onclick=()=>{const a=Math.round(+$('ea').value*100)/100,d=$('ed').value;if(!(a>0)){toast('Introdu o sumă mai mare ca 0.');$('ea').focus();return}if(!d){toast('Alege data cheltuielii.');return}
+ E.push({id:nid(),d,a,c:ecv,n:$('en').value.trim()});saveE();$('ea').value='';$('en').value='';$('em').value=d.slice(0,7);exp();toast(`Adăugat: −${f(a)} lei · ${esc(ecv)}`)};
+$('ea').onkeydown=e=>{if(e.key=='Enter')$('eadd').click()};
+
+/* ---------- income ---------- */
+function incR(){const m=$('im').value,Ls=I.filter(x=>mo(x)==m),tot=Ls.reduce((a,x)=>a+x.a,0);
+ $('ihero').innerHTML=`<div class="hero in"><small>Venit · ${labL(m)}</small><div class="big">${f(tot)}<u>lei</u></div><div class="chips-h"><span class="chip">${Ls.length} ${Ls.length==1?'intrare':'intrări'}</span></div></div>`;
+ const by=byCat(Ls,ICATS);$('ibar').innerHTML=by.length?catBlock(by,tot):'<p class="n">Apar după primul venit din lună.</p>';
+ $('ilist').innerHTML=Ls.length?txList(Ls,ICATS,'i'):empty(IC.in,'Niciun venit în '+labL(m)+'.')}
+$('im').oninput=()=>{if($('im').value)incR()};
+$('icalc').onclick=()=>{const t=calc(read()).tot;if(t>0){$('ia').value=Math.round(t*100)/100;icv='Salariu';pickR('ic',ICATS,icv);toast('Suma din calculator e completată.')}else{toast('Completează întâi calculatorul de salariu.')}};
+$('iadd').onclick=()=>{const a=Math.round(+$('ia').value*100)/100,d=$('idt').value;if(!(a>0)){toast('Introdu o sumă mai mare ca 0.');$('ia').focus();return}if(!d){toast('Alege data venitului.');return}
+ I.push({id:nid(),d,a,c:icv,n:$('inn').value.trim()});saveI();$('ia').value='';$('inn').value='';$('im').value=d.slice(0,7);incR();toast(`Adăugat: +${f(a)} lei · ${esc(icv)}`)};
+$('ia').onkeydown=e=>{if(e.key=='Enter')$('iadd').click()};
+
+/* ---------- savings ---------- */
+function svR(){const m=$('vm').value;if(!m)return;const Ls=V.filter(x=>mo(x)==m),ms=Ls.reduce((a,x)=>a+sg(x),0),tot=svTot(),inc=incOf(m),G=U.goal;
+ $('vhero').innerHTML=`<div class="hero sv"><small>Total economisit</small><div class="big">${tot<0?'−':''}${f(Math.abs(tot))}<u>lei</u></div><div class="chips-h"><span class="chip">${labL(m)}: ${ms<0?'−':'+'}${f(Math.abs(ms))} lei</span>${inc>0&&ms>0?`<span class="chip">${Math.round(ms/inc*100)}% din venit</span>`:''}${G?`<span class="chip">Obiectiv ${f(G)} lei · ${Math.max(0,Math.min(100,Math.round(tot/G*100)))}%</span>`:''}</div>${G?`<div class="trk"><div style="width:${Math.max(0,Math.min(100,tot/G*100))}%"></div></div>`:''}</div>`;
+ const av=inc!=null?inc-spOf(m)-ms:null;
+ $('vavail').textContent=vt=='out'?'Ai '+f(tot)+' lei în economii.':av==null?'Adaugă venitul lunii ca să vezi cât poți pune deoparte.':av>=0?'Disponibil în '+labL(m)+': '+f(av)+' lei.':'Luna e pe minus cu '+f(-av)+' lei.';
+ $('vlist').innerHTML=Ls.length?txList(Ls,null,'v'):empty(IC.sv,'Nicio mișcare în '+labL(m)+'.')}
+$('vm').oninput=()=>{if($('vm').value)svR()};
+$('vadd').onclick=()=>{const a=Math.round(+$('va').value*100)/100,d=$('vd').value;if(!(a>0)){toast('Introdu o sumă mai mare ca 0.');$('va').focus();return}if(!d){toast('Alege data.');return}
+ if(vt=='out'&&a>svTot()+1e-9){toast('Ai doar '+f(svTot())+' lei în economii.');return}
+ V.push({id:nid(),d,a,t:vt,n:$('vn').value.trim()});saveV();$('va').value='';$('vn').value='';$('vm').value=d.slice(0,7);svR();toast(vt=='out'?`Retras: ${f(a)} lei`:`Pus deoparte: ${f(a)} lei`)};
+$('va').onkeydown=e=>{if(e.key=='Enter')$('vadd').click()};
+
+/* ---------- chart ---------- */
+let sel=0,RG=0,vis={inc:1,exp:1,ec:1,sav:0},CD=[],CC=[],XF,YF;
+const SER=[{k:'inc',n:'Venit',c:'var(--pos)'},{k:'exp',n:'Cheltuieli',c:'var(--warm)'},{k:'ec',n:'Economii',c:'var(--sav)'},{k:'sav',n:'Sold',c:'var(--ac)'}];
+const W=700,H=300,L=56,R=14,T=14,Bt=30;
+function draw(){const all0=[...new Set([...D.map(x=>x.m),...E.map(mo),...I.map(mo),...V.map(mo)])].sort().filter(m=>incOf(m)!=null||spOf(m)>0||svOf(m)!=0);
+ CD=RG?all0.slice(-RG):all0;const el=$('ch');
+ $('sr').innerHTML=SER.map(s=>`<button data-k="${s.k}" class="${vis[s.k]?'':'off'}" aria-pressed="${!!vis[s.k]}"><i style="background:${s.c}"></i>${s.n}</button>`).join('');
+ if(!CD.length){el.innerHTML=empty('<path d="M4 19.5h16"/><path d="M5 15l4.5-5 3.5 3 6-7"/>','Adaugă venituri sau cheltuieli ca să vezi evoluția.');$('det').innerHTML='<p class="n">Detaliile lunii apar aici.</p>';$('st').innerHTML='';return}
+ CC=CD.map(m=>{const i=incOf(m)||0,e=spOf(m),v=svOf(m);return{inc:i,exp:e,ec:v,sav:i-e-v}});sel=CD.length-1;
+ const act=SER.filter(s=>vis[s.k]),use=act.length?act:SER,all=CC.flatMap(c=>use.map(s=>c[s.k]));
+ let mx=Math.max(...all),mn=Math.min(...all);const pad=(mx-mn)*.15||Math.abs(mx)*.1||1;mx+=pad;mn-=pad;if(mn<0&&Math.min(...all)>=0)mn=0;
+ const n=CD.length;XF=i=>n==1?(L+W-R)/2:L+i*(W-L-R)/(n-1);YF=v=>T+(1-(v-mn)/(mx-mn))*(H-T-Bt);
+ let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;touch-action:pan-y" role="img" aria-label="Venit și cheltuieli pe luni">`;
+ for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4,y=YF(v);s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" style="stroke:var(--bd)"/><text x="${L-8}" y="${y+4}" font-size="11" text-anchor="end" style="fill:var(--mu)">${Math.round(v).toLocaleString('ro-RO')}</text>`}
+ if(mn<0&&mx>0)s+=`<line x1="${L}" x2="${W-R}" y1="${YF(0)}" y2="${YF(0)}" style="stroke:var(--mu)" stroke-dasharray="2 3"/>`;
+ CD.forEach((m,i)=>{if(n<13||i%Math.ceil(n/12)==0)s+=`<text x="${XF(i)}" y="${H-10}" font-size="11" text-anchor="middle" style="fill:var(--mu)">${lab(m)}</text>`});
+ act.forEach(se=>{const p=CC.map((c,i)=>`${XF(i)},${YF(c[se.k])}`).join(' ');
+  if(se.k=='inc'&&n>1)s+=`<polygon points="${XF(0)},${YF(Math.max(mn,0))} ${p} ${XF(n-1)},${YF(Math.max(mn,0))}" style="fill:${se.c};opacity:.08"/>`;
+  s+=`<polyline points="${p}" fill="none" style="stroke:${se.c}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(n<=16)CC.forEach((c,i)=>s+=`<circle cx="${XF(i)}" cy="${YF(c[se.k])}" r="3" style="fill:${se.c}"/>`)});
+ s+=`<line id="cx" y1="${T}" y2="${H-Bt}" style="stroke:var(--mu)" stroke-dasharray="4 4"/>`+act.map(se=>`<circle id="d_${se.k}" r="6.5" style="fill:${se.c};stroke:var(--card)" stroke-width="3"/>`).join('')+'</svg>';
+ el.innerHTML=s;const sv=el.firstChild;
+ const mv=e=>{const r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W;pick(n==1?0:Math.max(0,Math.min(n-1,Math.round((x-L)/(W-L-R)*(n-1)))))};
+ sv.onpointermove=sv.onpointerdown=mv;
+ const ai=CC.reduce((a,c)=>a+c.inc,0)/n,ae=CC.reduce((a,c)=>a+c.exp,0)/n,tv=CC.reduce((a,c)=>a+c.ec,0),ts=CC.reduce((a,c)=>a+c.sav,0);
+ $('st').innerHTML=`<div class="stat"><span>Medie venit</span><b>${f(ai)}</b></div><div class="stat"><span>Medie cheltuieli</span><b>${f(ae)}</b></div><div class="stat"><span>Economisit</span><b style="color:var(--sav)">${(tv<0?'−':'')+f(Math.abs(tv))}</b></div><div class="stat"><span>Sold total</span><b class="${ts<0?'up':''}">${(ts<0?'−':'')+f(Math.abs(ts))}</b></div>`;
+ pick(sel)}
+function pick(i){sel=i;const x=XF(i),c=CC[i],p=i>0?CC[i-1]:null,m=CD[i];const cx=$('cx');cx.setAttribute('x1',x);cx.setAttribute('x2',x);
+ SER.forEach(s=>{const d=$('d_'+s.k);if(d){d.setAttribute('cx',x);d.setAttribute('cy',YF(c[s.k]))}});
+ const by=byCat(E.filter(e=>mo(e)==m),CATS);
+ $('det').innerHTML=`<h2>${labL(m)}</h2>`+SER.map(s=>{const d=p?c[s.k]-p[s.k]:null;const good=s.k=='exp'?d<=0:d>=0;return`<div class="tx"><span style="width:10px;height:10px;border-radius:50%;background:${s.c};flex:none"></span><div class="tt"><b>${s.n}</b></div><div class="am">${f(c[s.k])} lei</div><span class="n" style="width:92px;text-align:right;font-weight:700;color:${d==null?'var(--mu)':good?'var(--pos)':'var(--neg)'}">${d==null?'':(d>=0?'▲ +':'▼ −')+f(Math.abs(d))}</span></div>`}).join('')+
+ (by.length?`<p class="n" style="margin:14px 0 4px;font-weight:700">Cheltuieli pe categorii</p>`+catBlock(by,c.exp):'')}
+$('rg').onclick=e=>{const b=e.target.closest('button');if(!b)return;RG=+b.dataset.r;document.querySelectorAll('#rg button').forEach(q=>q.classList.toggle('on',q==b));draw()};
+$('sr').onclick=e=>{const b=e.target.closest('button');if(!b)return;vis[b.dataset.k]=vis[b.dataset.k]?0:1;draw()};
+
+/* ---------- settings ---------- */
+function custR(){const row=(c,k,i)=>`<div class="tx"><div class="ic" style="--cc:${c[2]}">${c[1]}</div><div class="tt"><b>${esc(c[0])}</b><span>${k=='c'?'Cheltuieli':'Venit'}</span></div><button class="x" data-dcat="${k}" data-i="${i}" aria-label="Șterge categoria ${esc(c[0])}">${SV(IC.x)}</button></div>`;
+ const h=CU.map((c,i)=>row(c,'c',i)).join('')+IU.map((c,i)=>row(c,'i',i)).join('');
+ $('custcats').innerHTML=h?h+'<p class="n" style="margin-top:10px">Sumele deja salvate își păstrează categoria.</p>':'<p class="n">Nu ai categorii proprii încă. Le creezi cu „+ Categorie nouă” când adaugi o sumă.</p>'}
+['cas','cass','imp','np','op'].forEach(k=>{$(k).value=S[k];$(k).oninput=()=>{S[k]=+$(k).value||0;save();prev()}});
+$('base').value=S.base||'';$('b').value=S.base||'';
+$('base').oninput=()=>{const old=S.base||0,c=$('b').value;S.base=+$('base').value||0;if(c===''||+c===old)$('b').value=S.base||'';save();prev()};
+$('budget').value=U.budget||'';$('budget').oninput=()=>{U.budget=Math.max(0,+$('budget').value||0);saveU()};
+$('goal').value=U.goal||'';$('goal').oninput=()=>{U.goal=Math.max(0,+$('goal').value||0);saveU()};
+$('startsel').value=U.start;$('startsel').onchange=()=>{U.start=$('startsel').value;saveU();toast('Pagina de start a fost salvată.')};
+$('whr').onclick=()=>{S.wh={};save();whGrid();setH();prev();toast('Orele lucrătoare au revenit la valorile automate.')};
+const snap=()=>JSON.stringify({v:1,s:S,d:D,e:E,i:I,sv:V,c:CU,ic:IU,ui:U});
+function restore(o){S={...DEF,...(o.s||{})};D=arr(o.d);E=arr(o.e);I=arr(o.i);V=arr(o.sv);CU=arr(o.c);IU=arr(o.ic);if(o.ui)U={...UDEF,...o.ui};
+ save();saveE();saveI();saveV();saveC();saveIC();saveU();recats();applyUI();initFields();refresh()}
+$('expbtn').onclick=()=>{const t=$('expta');t.value=snap();t.hidden=false;$('impw').hidden=true;
+ const fb=()=>{t.focus();t.select();toast('Selectează textul și copiază-l.')};
+ try{navigator.clipboard.writeText(t.value).then(()=>toast('Backup copiat. Păstrează-l într-o notiță.'),fb)}catch(e){fb()}};
+$('impbtn').onclick=()=>{$('impw').hidden=!$('impw').hidden;$('expta').hidden=true;if(!$('impw').hidden)$('impta').focus()};
+$('impgo').onclick=()=>{let o;try{o=JSON.parse($('impta').value)}catch(e){toast('Textul nu e un backup valid. Copiază-l din nou, complet.');return}
+ if(!o||typeof o!='object'||!('e' in o||'i' in o)){toast('Textul nu conține date Money Flow.');return}
+ const old=JSON.parse(snap());restore(o);$('impta').value='';$('impw').hidden=true;toast('Date restaurate.',()=>restore(old))};
+$('wipe').onclick=()=>{const b=$('wipe');if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='Apasă din nou ca să ștergi tot';clearTimeout(b.h);b.h=setTimeout(()=>{b.classList.remove('arm');b.textContent='Șterge toate datele'},4000);return}
+ clearTimeout(b.h);b.classList.remove('arm');b.textContent='Șterge toate datele';const old=JSON.parse(snap());restore({s:S,ui:U,e:[],i:[],sv:[],d:[],c:[],ic:[]});toast('Toate datele au fost șterse.',()=>restore(old))};
+
+/* ---------- navigation ---------- */
+const TT={v:'Rezumat',i:'Venituri',c:'Cheltuieli',e:'Economii',g:'Evoluție',a:'Calculator salariu',s:'Setări'};
+function refresh(){summary();exp();incR();svR();prev();custR();if(cur=='g')draw()}
+function go(t){cur=t;Object.keys(TT).forEach(k=>$(k).hidden=k!=t);$('pgt').textContent=TT[t];
+ document.querySelectorAll('.nav button').forEach(b=>{b.classList.toggle('on',b.dataset.t==t);b.setAttribute('aria-current',b.dataset.t==t?'page':'false')});
+ if(t=='v')summary();if(t=='c')exp();if(t=='i')incR();if(t=='e')svR();if(t=='g')draw();$('setb').classList.toggle('on',t=='s');if(t=='a')prev();if(t=='s')custR();scrollTo(0,0)}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+$('thb').onclick=()=>{U.theme=isDark()?'light':'dark';saveU();applyUI()};
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const q=t.dataset;
+ if(q.ms){const inp=$(q.ms);inp.value=shiftM(inp.value||ym(new Date()),+q.k);inp.dispatchEvent(new Event('input',{bubbles:true}));return}
+ if(q.go){go(q.go);return}
+ if(q.add){go(q.add);const m=SM,d=m==ym(new Date())?today():m+'-01';if(q.add=='c'){$('ed').value=d;$('em').value=m;exp();$('ea').focus()}else{$('idt').value=d;$('im').value=m;incR();$('ia').focus()}return}
+ if(q.del){const k=q.del,id=q.id,get=()=>k=='i'?I:k=='c'?E:V,x=get().find(z=>z.id==id);if(!x)return;
+  const setL=L=>{if(k=='i'){I=L;saveI()}else if(k=='c'){E=L;saveE()}else{V=L;saveV()}};
+  setL(get().filter(z=>z.id!=id));refresh();toast(k=='i'?'Venit șters.':k=='c'?'Cheltuială ștearsă.':'Mișcare ștearsă.',()=>{setL([...get(),x]);refresh()});return}
+ if(q.vt){vt=q.vt;document.querySelectorAll('[data-vt]').forEach(b=>b.classList.toggle('on',b==t));$('vadd').textContent=vt=='out'?'Retrage din economii':'Pune deoparte';svR();return}
+ if(q.dcat){const k=q.dcat,i=+q.i,L2=k=='c'?CU:IU,c=L2.splice(i,1)[0];k=='c'?saveC():saveIC();recats();if(ecv==c[0])ecv=BASE[0][0];if(icv==c[0])icv=IBASE[0][0];pickR('ec',CATS,ecv);pickR('ic',ICATS,icv);custR();
+  toast(`Categoria „${esc(c[0])}” a fost ștearsă.`,()=>{L2.splice(i,0,c);k=='c'?saveC():saveIC();recats();pickR('ec',CATS,ecv);pickR('ic',ICATS,icv);custR()});return}
+ if(q.th){U.theme=q.th;saveU();applyUI();return}
+ if(q.acc){U.accent=q.acc;saveU();applyUI();return}
+ if(q.dec!=null&&t.closest('.seg')){U.dec=+q.dec;saveU();applyUI();refresh();return}
+});
+['b','h','nh','os','t','bp'].forEach(i=>$(i).oninput=prev);
+$('m').oninput=()=>{setH();['nh','os','t','bp'].forEach(i=>$(i).value=0);if($('b').value==='')$('b').value=S.base||'';prev()};
+$('cl').onclick=()=>{['b','nh','os','t','bp'].forEach(i=>$(i).value=i=='b'?(S.base||''):0);prev();toast('Calculatorul a fost resetat.')};
+$('tosend').onclick=()=>{const r=read(),t=calc(r).tot;if(!(t>0)){toast('Completează salariul brut ca să calculez suma.');return}
+ const m=r.m||ym(new Date());go('i');$('ia').value=Math.round(t*100)/100;icv='Salariu';pickR('ic',ICATS,icv);$('idt').value=m==ym(new Date())?today():m+'-01';$('im').value=m;incR();toast('Verifică data și apasă „Adaugă venitul”.')};
+
+/* ---------- init ---------- */
+function initFields(){['cas','cass','imp','np','op'].forEach(k=>$(k).value=S[k]);$('base').value=S.base||'';$('budget').value=U.budget||'';$('goal').value=U.goal||'';$('startsel').value=U.start;whGrid();setH()}
+{const now=new Date(),d=today(),m=ym(now);$('m').value=m;$('ed').value=d;$('idt').value=d;$('em').value=m;$('im').value=m;$('vd').value=d;$('vm').value=m;SM=m;
+ $('eyb').textContent='Money Flow · '+DNL[now.getDay()]+', '+now.getDate()+' '+MNL[now.getMonth()]}
+pickR('ec',CATS,ecv);pickR('ic',ICATS,icv);picker('c');picker('i');
+applyUI();initFields();prev();go(TT[U.start]?U.start:'v');
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
