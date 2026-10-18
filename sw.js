@@ -1,5 +1,5 @@
 // Money Flow: offline cache. Bump VERSION after changing any file.
-const VERSION='mf-v33';
+const VERSION='mf-v34';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 
 // Install: always fetch fresh copies (skip the browser's HTTP cache, GitHub Pages caches files ~10 min)
